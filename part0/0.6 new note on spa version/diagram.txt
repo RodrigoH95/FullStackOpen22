@@ -1,0 +1,6 @@
+title User creates note on SPA version
+
+note over Browser: Browser renders new note\nand sends it to server
+Browser->Server: HTTP POST https://studies.cs.helsinki.fi/exampleapp/new_note_spa
+note over Server: Server saves new note
+Server->Browser: HTTP 201 Created - {"message":"note created"}
