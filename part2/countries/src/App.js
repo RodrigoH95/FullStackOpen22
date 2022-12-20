@@ -4,6 +4,10 @@ import axios from "axios";
 function App() {
   const [countries, setCountries] = useState([]);
   const [countryFilter, setCountryFilter] = useState("");
+  const [show, setShow] = useState(new Uint8Array(0));
+  const [countryWeather, setCountryWeather] = useState({});
+
+  const api_key = process.env.REACT_APP_API_KEY;
 
   useEffect(() => {
     axios.get("https://restcountries.com/v3.1/all").then((response) => {
@@ -15,6 +19,26 @@ function App() {
     setCountryFilter(e.target.value);
   };
 
+  const toggleCountry = (index) => {
+    const copy = [...show];
+    copy[index] = !show[index]
+    setShow(copy);
+  }
+
+  const showCountryWeather = (city) => {
+    axios
+      .get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&APPID=${api_key}&units=metric`)
+      .then(response => {
+        setCountryWeather(response.data);
+        return (
+          <div>
+            <h2>Weather in {city}</h2>
+            <p>Temperature: {response.data.main.temp}</p>
+          </div>
+        )
+      })
+    }
+ 
   const showCountryData = (country) => (
     <div>
       <h2>{country.name.common}</h2>
@@ -30,18 +54,32 @@ function App() {
     </div>
   );
 
-  const CountryList = () => {
-    const countriesToShow = countryFilter
-      ? countries.filter((country) =>
-          country.name.common.toLowerCase().includes(countryFilter.toLowerCase())
-        )
-      : countries;
 
+  const countriesToShow = countryFilter
+  ? countries.filter((country) =>
+      country.name.common.toLowerCase().includes(countryFilter.toLowerCase())
+    )
+  : countries;
+
+  const CountryList = () => {
     if (countriesToShow.length > 10) return countryFilter ? <p>Too many results</p> : <p>Search a country</p>;
     else if (countriesToShow.length > 1) {
-      return countriesToShow.map((country) => <h2 key={country.name.common}>{country.name.common} <button onClick={handleClick}>Show</button></h2>);
+      return countriesToShow.map((country) => {  
+        const i = countries.indexOf(country);   
+        return (
+          <div key={country.name.common}>
+            <h2>{country.name.common} <button onClick={() => toggleCountry(i)}>{show[i] ? "Hide" : "Show"}</button></h2>
+            {Boolean(show[i]) && showCountryData(country)}
+          </div>
+        )
+    });
     } else if (countriesToShow.length === 1) {
-      return showCountryData(countriesToShow[0])
+      return (
+        <div>
+          {showCountryData(countriesToShow[0])}
+          {showCountryWeather(countriesToShow[0].capital[0])}
+        </div>
+      )
     }
   };
 
