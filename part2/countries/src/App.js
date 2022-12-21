@@ -1,13 +1,36 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
+const Weather = ({ city }) => {
+  const [currentWeather, setCurrentWeather] = useState(null);
+  const api_key = process.env.REACT_APP_API_KEY;
+
+  useEffect(() => {
+    axios
+      .get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&APPID=${api_key}&units=metric`)
+      .then(response => {
+        setCurrentWeather(response.data);
+      })
+  }, []);
+
+  return (
+    <div>
+      <h2>Weather in {city}</h2>
+      {currentWeather && 
+      <div>
+        <p>Temperature: {currentWeather.main.temp} °C</p>
+        <img src={`http://openweathermap.org/img/wn/${currentWeather.weather[0].icon}@2x.png`}></img>
+        <p>Wind: {currentWeather.wind.speed} m/s</p>
+      </div>}
+    </div>
+  )
+
+}
+
 function App() {
   const [countries, setCountries] = useState([]);
   const [countryFilter, setCountryFilter] = useState("");
   const [show, setShow] = useState(new Uint8Array(0));
-  const [countryWeather, setCountryWeather] = useState({});
-
-  const api_key = process.env.REACT_APP_API_KEY;
 
   useEffect(() => {
     axios.get("https://restcountries.com/v3.1/all").then((response) => {
@@ -24,20 +47,6 @@ function App() {
     copy[index] = !show[index]
     setShow(copy);
   }
-
-  const showCountryWeather = (city) => {
-    axios
-      .get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&APPID=${api_key}&units=metric`)
-      .then(response => {
-        setCountryWeather(response.data);
-        return (
-          <div>
-            <h2>Weather in {city}</h2>
-            <p>Temperature: {response.data.main.temp}</p>
-          </div>
-        )
-      })
-    }
  
   const showCountryData = (country) => (
     <div>
@@ -77,7 +86,7 @@ function App() {
       return (
         <div>
           {showCountryData(countriesToShow[0])}
-          {showCountryWeather(countriesToShow[0].capital[0])}
+          <Weather city={countriesToShow[0].capital[0]} />
         </div>
       )
     }
