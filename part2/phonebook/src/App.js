@@ -33,14 +33,15 @@ const App = () => {
       });
     } else {
       if(window.confirm(`${newName} is already added to phonebook, replace number?`)) {
-        personService.updatePerson(persons[index].id, {...persons[index], number: newNumber}).then(person => {
-          const copy = [...persons];
-          copy[index] = person;
-          setPersons(copy);
-          addMessage(`Success - Updated ${person.name}'s number`)
+        personService.updatePerson(persons[index].id, {...persons[index], number: newNumber})
+          .then(person => {
+            addMessage(`Success - Updated ${person.name}'s number`);
+            const copy = [...persons];
+            copy[index] = person;
+            setPersons(copy);
         })
         .catch(err => {
-          addMessage(`Error - ${newName} information was not found on the server`);
+          addMessage(`Error - ${newName} information was not found on the server`, err);
         })
       };
     }
